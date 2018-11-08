@@ -400,21 +400,21 @@ class FfmpegEffects
 /**
  * scrollingText
  *
- * @param    string    $bgImage 
- * @param    integer   $textBoxWidth 
- * @param    integer   $textBoxHeight 
- * @param    integer   $x 
- * @param    integer   $y 
- * @param    string    $text 
- * @param    integer   $duration 
- * @param    integer   $scrollingDelay 
+ * @param    string    $bgImage
+ * @param    integer   $textBoxWidth
+ * @param    integer   $textBoxHeight
+ * @param    integer   $x
+ * @param    integer   $y
+ * @param    string    $text
+ * @param    integer   $duration
+ * @param    integer   $scrollingDelay
  * @param    string    $audioFile
  * @param    string    $output
  * @param    integer   $width - video width
  * @param    integer   $height - video height
  * @param    string    $temporaryAssFile
  * @param    string    $font
- * @param    integer   $fontSize 
+ * @param    integer   $fontSize
  * @return string  Command ffmpeg
  */
 
@@ -432,8 +432,8 @@ class FfmpegEffects
         $width = 1280,
         $height = 720,
         $temporaryAssFile,
-        $font="Arial",
-        $fontSize=35
+        $font = "Arial",
+        $fontSize = 35
     ) {
 
         $this->setLastError('');
@@ -449,7 +449,10 @@ class FfmpegEffects
             $height,
             $temporaryAssFile,
             "",
-            "Default")) {
+            "Default",
+            $font,
+            $fontSize
+        )) {
             return ("");
         }
 
@@ -495,20 +498,20 @@ class FfmpegEffects
  * prepareSubtitles
  * prepare ASS subtitles file
  *
- * @param    integer   $textBoxWidth 
- * @param    integer   $textBoxHeight 
- * @param    integer   $x 
- * @param    integer   $y 
- * @param    string    $text 
- * @param    integer   $duration 
- * @param    integer   $scrollingDelay 
+ * @param    integer   $textBoxWidth
+ * @param    integer   $textBoxHeight
+ * @param    integer   $x
+ * @param    integer   $y
+ * @param    string    $text
+ * @param    integer   $duration
+ * @param    integer   $scrollingDelay
  * @param    integer   $width - video width
  * @param    integer   $height - video height
  * @param    string    $temporaryAssFile
  * @param    string    $additionalStyles eg 'myStyle0: My,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,6,1,0,0,2,10,25,35,1')
  * @param    string    $useStyle  eg myStyle0
  * @param    string    $font
- * @param    integer   $fontSize 
+ * @param    integer   $fontSize
  * @return   boolean
  */
     public function prepareSubtitles(
@@ -524,8 +527,8 @@ class FfmpegEffects
         $temporaryAssFile,
         $additionalStyles = "",
         $useStyle = "Default",
-        $font="Arial",
-        $fontSize=35
+        $font = "Arial",
+        $fontSize = 35
 
     ) {
         $this->setLastError('');
