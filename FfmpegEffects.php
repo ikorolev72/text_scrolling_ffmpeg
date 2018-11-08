@@ -72,7 +72,7 @@ class FfmpegEffects
         $this->ffmpegSettings['video']['faststart'] = true; # -movflags +faststart
         ################# libx264 settings #################
         $this->ffmpegSettings['video']['codec'] = "libx264"; # https://trac.ffmpeg.org/wiki/Encode/H.264
-        $this->ffmpegSettings['video']['preset'] = "fast"; # Speed of processing: ultrafast,superfast, veryfast, faster, fast, medium, slow, slower, veryslow, placebo
+        $this->ffmpegSettings['video']['preset'] = "veryfast"; # Speed of processing: ultrafast,superfast, veryfast, faster, fast, medium, slow, slower, veryslow, placebo
         $this->ffmpegSettings['video']['crf'] = "23"; # Constant Rate Factor: 0-51: where 0 is lossless, 23 is default, and 51 is worst possible.
         //$this->ffmpegSettings['video']['profile']="main";        # limit the output to a specific H.264 profile: baseline, main, high, high10, high422, high444 ( for old devices set to:  'baseline -level 3.0' )
         ################# end of libx264 settings #################
@@ -345,7 +345,6 @@ class FfmpegEffects
         return 1;
     }
 
-
 /**
  * time2float
  * this function translate time in format 00:00:00.00 to seconds
@@ -396,6 +395,186 @@ class FfmpegEffects
             return 0;
         }
         return 1;
+    }
+
+/**
+ * scrollingText
+ *
+ * @param    string    $bgImage 
+ * @param    integer   $textBoxWidth 
+ * @param    integer   $textBoxHeight 
+ * @param    integer   $x 
+ * @param    integer   $y 
+ * @param    string    $text 
+ * @param    integer   $duration 
+ * @param    integer   $scrollingDelay 
+ * @param    string    $audioFile
+ * @param    string    $output
+ * @param    integer   $width - video width
+ * @param    integer   $height - video height
+ * @param    string    $temporaryAssFile
+ * @param    string    $font
+ * @param    integer   $fontSize 
+ * @return string  Command ffmpeg
+ */
+
+    public function scrollingText(
+        $bgImage,
+        $textBoxWidth,
+        $textBoxHeight,
+        $x,
+        $y,
+        $text,
+        $duration,
+        $scrollingDelay,
+        $audioFile,
+        $output,
+        $width = 1280,
+        $height = 720,
+        $temporaryAssFile,
+        $font="Arial",
+        $fontSize=35
+    ) {
+
+        $this->setLastError('');
+        if (!$this->prepareSubtitles(
+            $textBoxWidth,
+            $textBoxHeight,
+            $x,
+            $y,
+            $text,
+            $duration,
+            $scrollingDelay,
+            $width,
+            $height,
+            $temporaryAssFile,
+            "",
+            "Default")) {
+            return ("");
+        }
+
+        $ffmpeg = $this->getFfmpegSettings('general', 'ffmpeg');
+        $ffmpegLogLevel = $this->getFfmpegSettings('general', 'ffmpegLogLevel');
+        $videoOutSettingsString = $this->getVideoOutSettingsString();
+        $audioOutSettingsString = $this->getAudioOutSettingsString();
+        $data = null;
+        if ($checkVideoExists && !file_exists($bgImage)) {
+            $this->setLastError("File $bgImage do not exists");
+            return '';
+        }
+        if (!$this->getStreamInfo($bgImage, 'video', $data)) {
+            $this->setLastError("Cannot get info about video stream in file $bgImage");
+            return '';
+        }
+        if (!$this->getStreamInfo($audioFile, 'audio', $data)) {
+            $this->setLastError("Cannot get info about audio stream in file $audioFile");
+            return '';
+        }
+
+        $cmd = join(" ", [
+            "$ffmpeg -loglevel $ffmpegLogLevel  -y  ",
+            " -i $audioFile -ss 0 -t $duration ",
+            " -loop 1 -i $bgImage -ss 0 -t $duration ",
+            " -filter_complex \" ",
+            " [0:a] apad [a];  ",
+            " [1:v] scale=w=min(iw*${height}/ih\,${width}):h=min(${height}\,ih*${width}/iw),  ",
+            " pad=w=${width}:h=${height}:x=(${width}-iw)/2:y=(${height}-ih)/2 , ",
+            " ass='$temporaryAssFile' ",
+            " [v]\" ",
+            " -map \"[v]\" -map \"[a]\" $audioOutSettingsString $videoOutSettingsString $output",
+        ]
+        );
+        if ($this->getFfmpegSettings('general', 'showCommand')) {
+            echo "$cmd\n";
+        }
+
+        return $cmd;
+    }
+
+/**
+ * prepareSubtitles
+ * prepare ASS subtitles file
+ *
+ * @param    integer   $textBoxWidth 
+ * @param    integer   $textBoxHeight 
+ * @param    integer   $x 
+ * @param    integer   $y 
+ * @param    string    $text 
+ * @param    integer   $duration 
+ * @param    integer   $scrollingDelay 
+ * @param    integer   $width - video width
+ * @param    integer   $height - video height
+ * @param    string    $temporaryAssFile
+ * @param    string    $additionalStyles eg 'myStyle0: My,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,6,1,0,0,2,10,25,35,1')
+ * @param    string    $useStyle  eg myStyle0
+ * @param    string    $font
+ * @param    integer   $fontSize 
+ * @return   boolean
+ */
+    public function prepareSubtitles(
+        $textBoxWidth,
+        $textBoxHeight,
+        $x,
+        $y,
+        $text,
+        $duration,
+        $scrollingDelay,
+        $width = 1280,
+        $height = 720,
+        $temporaryAssFile,
+        $additionalStyles = "",
+        $useStyle = "Default",
+        $font="Arial",
+        $fontSize=35
+
+    ) {
+        $this->setLastError('');
+        $dialogEnd = $this->float2time($duration);
+        $lines = substr_count($text, "\n");
+        $fixedText = preg_replace('/\s*\n\s*/', '\N', $text);
+        //$font = "Arial";
+        //$fontSize = 35;
+
+        $clipX0 = $x;
+        $clipX1 = $x + $textBoxWidth;
+        $clipY0 = $y;
+        $clipY1 = $y + $textBoxHeight;
+        $styleMarginL = $x;
+        $styleMarginR = $width - $textBoxWidth - $x;
+
+        $moveT0 = $scrollingDelay * 1000;
+        $moveT1 = $duration * 1000;
+        $moveY1 = $y - (1 + $lines) * $fontSize;
+        $styles = "Style: $useStyle,$font,$fontSize,&H00FFFFFF,&H000000FF,&H00050506,&H00919198,0,0,0,0,100,100,0,0,1,1,0.1,7,$styleMarginL,$styleMarginR,10,1";
+
+        $content = "[Script Info]
+; Aegisub 3.2.2
+; http://www.aegisub.org/
+; FfmpegEffects php lib
+; korolev-ia [at] yandex.ru
+ScriptType: v4.00+
+PlayResX: $width
+PlayResY: $height
+WrapStyle: 2
+YCbCr Matrix: TV.601
+
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+$styles
+$additionalStyles
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,$dialogEnd,Default,,0,0,0,,{\clip($clipX0,$clipY0,$clipX1,$clipY1)} {\move($clipX0,$clipY0,$clipX0,$moveY1,$moveT0,$moveT1)} \h\h\h\h$fixedText
+";
+
+        if (!file_put_contents($temporaryAssFile, $content)) {
+            $this->writeToLog("Cannot save temporary subtitles file '$temporaryAssFile'");
+            return (false);
+        }
+        return (true);
+
     }
 
 }
