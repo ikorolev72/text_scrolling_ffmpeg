@@ -86,6 +86,7 @@ Eg
 ```
 cd ~
 mkdir .fonfs
+cd .fonfs
 wget https://github.com/google/fonts/raw/master/apache/opensans/OpenSans-Regular.ttf
 fc-list | grep -i OpenSans
 ```
