@@ -6,7 +6,7 @@
  * and have several function for effects, like
  * transitions, mix audio, etc
  * @author korolev-ia [at] yandex.ru
- * @version 3.0.5
+ * @version 3.0.7
  */
 
 class FfmpegEffects
@@ -410,11 +410,15 @@ class FfmpegEffects
  * @param    integer   $scrollingDelay
  * @param    string    $audioFile
  * @param    string    $output
+ * @param    string    $temporaryAssFile
  * @param    integer   $width - video width
  * @param    integer   $height - video height
- * @param    string    $temporaryAssFile
- * @param    string    $font
- * @param    integer   $fontSize
+ * @param    string    $font - default Arial
+ * @param    integer   $fontSize - default 35
+ * @param    string    $fontColor - default white &H00FFFFFF
+ * @param    integer   $styleBold - ( default disable - 0, enable - 1 )
+ * @param    integer   $styleItalic - ( default disable - 0, enable - 1 )
+ * @param    integer   $showLines - how many line will be shown in the scrolling window, default - 3 
  * @return string  Command ffmpeg
  */
 
@@ -429,11 +433,15 @@ class FfmpegEffects
         $scrollingDelay,
         $audioFile,
         $output,
+        $temporaryAssFile,        
         $width = 1280,
         $height = 720,
-        $temporaryAssFile,
         $font = "Arial",
-        $fontSize = 35
+        $fontSize = 35,
+        $fontColor = "&H00FFFFFF",
+        $styleBold = 0,
+        $styleItalic = 0,
+        $showLines = 3
     ) {
 
         $this->setLastError('');
@@ -445,13 +453,17 @@ class FfmpegEffects
             $text,
             $duration,
             $scrollingDelay,
+            $temporaryAssFile,
             $width,
             $height,
-            $temporaryAssFile,
             "",
             "Default",
             $font,
-            $fontSize
+            $fontSize,
+            $fontColor,
+            $styleBold,
+            $styleItalic,
+            3
         )) {
             return ("");
         }
@@ -461,7 +473,7 @@ class FfmpegEffects
         $videoOutSettingsString = $this->getVideoOutSettingsString();
         $audioOutSettingsString = $this->getAudioOutSettingsString();
         $data = null;
-        if ($checkVideoExists && !file_exists($bgImage)) {
+        if (!file_exists($bgImage)) {
             $this->setLastError("File $bgImage do not exists");
             return '';
         }
@@ -512,6 +524,12 @@ class FfmpegEffects
  * @param    string    $useStyle  eg myStyle0
  * @param    string    $font
  * @param    integer   $fontSize
+ * @param    integer   $fontColor
+ * @param    string    $fontColor
+ * @param    integer   $styleBold ( disable - 0, enable - 1 )
+ * @param    integer   $styleItalic ( disable - 0, enable - 1 )
+ * @param    integer   $showLines - how many line will be shown in the scrolling window
+ *
  * @return   boolean
  */
     public function prepareSubtitles(
@@ -522,21 +540,23 @@ class FfmpegEffects
         $text,
         $duration,
         $scrollingDelay,
+        $temporaryAssFile,
         $width = 1280,
         $height = 720,
-        $temporaryAssFile,
         $additionalStyles = "",
         $useStyle = "Default",
         $font = "Arial",
-        $fontSize = 35
-
+        $fontSize = 35,
+        $fontColor = "&H00FFFFFF",
+        $styleBold = 0,
+        $styleItalic = 0,
+        $showLines = 3
     ) {
         $this->setLastError('');
         $dialogEnd = $this->float2time($duration);
         $lines = substr_count($text, "\n");
+        $text = preg_replace('/\s*$/', '', $text); // remove \n and spaces in the end of text
         $fixedText = preg_replace('/\s*\n\s*/', '\N', $text);
-        //$font = "Arial";
-        //$fontSize = 35;
 
         $clipX0 = $x;
         $clipX1 = $x + $textBoxWidth;
@@ -547,8 +567,11 @@ class FfmpegEffects
 
         $moveT0 = $scrollingDelay * 1000;
         $moveT1 = $duration * 1000;
-        $moveY1 = $y - (1 + $lines) * $fontSize;
-        $styles = "Style: $useStyle,$font,$fontSize,&H00FFFFFF,&H000000FF,&H00050506,&H00919198,0,0,0,0,100,100,0,0,1,1,0.1,7,$styleMarginL,$styleMarginR,10,1";
+        $oneLineHeight = $textBoxHeight / $showLines;
+        $moveY1 = $y - (1 + $lines - $showLines) * $oneLineHeight;
+        $styleBold = $styleBold ? -1 : 0;
+        $styleItalic = $styleItalic ? -1 : 0;
+        $styles = "Style: $useStyle,$font,$fontSize,$fontColor,&H000000FF,&H00050506,&H00919198,$styleBold,$styleItalic,0,0,100,100,0,0,1,1,0.1,7,$styleMarginL,$styleMarginR,10,1";
 
         $content = "[Script Info]
 ; Aegisub 3.2.2
@@ -569,7 +592,7 @@ $additionalStyles
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,$dialogEnd,Default,,0,0,0,,{\clip($clipX0,$clipY0,$clipX1,$clipY1)} {\move($clipX0,$clipY0,$clipX0,$moveY1,$moveT0,$moveT1)} \h\h\h\h$fixedText
+Dialogue: 0,0:00:00.00,$dialogEnd,Default,,0,0,0,,{\clip($clipX0,$clipY0,$clipX1,$clipY1)} {\move($clipX0,$clipY0,$clipX0,$moveY1,$moveT0,$moveT1)}$fixedText
 ";
 
         if (!file_put_contents($temporaryAssFile, $content)) {

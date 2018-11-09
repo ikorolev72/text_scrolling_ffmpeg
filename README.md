@@ -16,12 +16,19 @@ The parameters:
 
 ##  The Latest Version
 
-	version 1.1 2018.11.08
+	version 1.2 2018.11.09
 
 
 ##  Whats new
+	version 1.2 2018.11.09
+  + Added parameters FontColor, styleBold, styleItalic, showLines in function
+  + Fixed bug with used font
+  + Removed 'hard spaces' in begining of text
+
+
 	version 1.1 2018.11.08
   + Added scrollingText function and demo
+
 
 	version 1.0 2018.11.06
   + Initial version
@@ -54,15 +61,43 @@ $cmd = $effect->scrollingText(
     $scrollingDelay,
     $audioFile,
     $output,
-    $width,
-    $height,
     $temporaryAssFile,
+    $width, 
+    $height,
     $font,
-    $fontSize
+    $fontSize,
+    $fontColor,
+    $styleBold,
+    $styleItalic,
+    $showLines        
 );
 $effect->doExec($cmd)
 ```
 Additional settings and parameters you can see in `demo.php` file
+
+
+### How to set font color 
+There used AARRGGBB color format with alpha channel ( eg `$fontColor = "&HD1CEE7"`) and you can use simple converter like http://www.netdelight.be/kml/index.php for converting from HTML to required color format.
+
+
+### How to install and use new font ( Linux )
+Font files that are placed in the hidden .fonts directory of your home folder will automatically be available.
+Eg
+```
+cd ~
+mkdir .fonfs
+wget https://github.com/google/fonts/raw/master/apache/opensans/OpenSans-Regular.ttf
+fc-list | grep -i OpenSans
+```
+You need use system name of font in your script, for example
+```
+$ fc-list |grep -i open
+/home/ubuntu/.fonts/OpenSans-Regular.ttf: Open Sans:style=Regular
+$ fc-list |grep -i roboto
+/usr/share/fonts/truetype/roboto/hinted/RobotoCondensed-Regular.ttf: Roboto Condensed:style=Regular
+```
+In your script you need use second field of `fc-info` output. Eg `$font='Open Sans';` or `$font='Roboto Condensed';`
+
 
 
 ##  Bugs
