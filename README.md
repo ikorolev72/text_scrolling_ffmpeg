@@ -16,10 +16,17 @@ The parameters:
 
 ##  The Latest Version
 
-	version 1.2 2018.11.09
+	version 1.3 2018.11.17
 
 
 ##  Whats new
+	version 1.3 2018.11.17
+  + Added parameter outLine in function prepareSubtitles
+  + Fixed bug with used font
+  + Split function prepareSubtitles and scrollingText
+  + Added demo with predefined styles demo_predefined_styles.php
+
+
 	version 1.2 2018.11.09
   + Added parameters FontColor, styleBold, styleItalic, showLines in function
   + Fixed bug with used font
@@ -44,14 +51,12 @@ cd text_scrolling_ffmpeg
 php demo.php
 ```
 
-
 ## How to use
 Mostly this will be looks like this
 ```
 require_once "./FfmpegEffects.php";
 $effect = new FfmpegEffects();
-$cmd = $effect->scrollingText(
-    $bgImage,
+$effect->prepareSubtitles(
     $textBoxWidth,
     $textBoxHeight,
     $x,
@@ -59,26 +64,48 @@ $cmd = $effect->scrollingText(
     $text,
     $duration,
     $scrollingDelay,
-    $audioFile,
-    $output,
     $temporaryAssFile,
-    $width, 
+    $width,
     $height,
+    $additionalStyles,
+    $useStyle,
     $font,
     $fontSize,
     $fontColor,
     $styleBold,
     $styleItalic,
-    $showLines        
+    $showLines,
+    $outLine);
+
+$cmd = $effect->scrollingText(
+    $bgImage,
+    $audioFile,
+    $temporaryAssFile,
+    $output,
+    $duration,
+    $width,
+    $height
 );
 $effect->doExec($cmd)
 ```
-Additional settings and parameters you can see in `demo.php` file
+Additional settings and parameters you can see in `demo.php` and `demo_predefined_styles.php` file
+
+### How to set right textBoxHeight and showLines value
+Please be carefull with $fontSize, $textBoxHeight and $showLines. 
+Those variables are relative and define speed of scrolling.
+Unfortunately, several fonts may have another height in Linux, but in most cases you can set simple `$textBoxHeight=$showLines*$fontSize;`
+
+for example `$fontSize=35`, we need 3 ( `$showLines=3` ) lines to will be shown, then
+set `$textBoxHeight` to `3*35=105`
 
 
 ### How to set font color 
 There used AARRGGBB color format with alpha channel ( eg `$fontColor = "&HD1CEE7"`) and you can use simple converter like http://www.netdelight.be/kml/index.php for converting from HTML to required color format.
 
+### How to define additional styles
+You can define own text styles ( font, fontSize, fontColor, bold, italic, etc ) with editor Aegisub (  http://www.aegisub.org/ )
+Create new subtitles file, define own styles ( menu 'Subtitles'->'Style manager' ). Save subtitles, then cut styles
+in any editor and use those lines for variable $additionalStyles.
 
 ### How to install and use new font ( Linux )
 Font files that are placed in the hidden .fonts directory of your home folder will automatically be available.

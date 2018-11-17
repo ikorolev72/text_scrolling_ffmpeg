@@ -401,72 +401,23 @@ class FfmpegEffects
  * scrollingText
  *
  * @param    string    $bgImage
- * @param    integer   $textBoxWidth
- * @param    integer   $textBoxHeight
- * @param    integer   $x
- * @param    integer   $y
- * @param    string    $text
- * @param    integer   $duration
- * @param    integer   $scrollingDelay
  * @param    string    $audioFile
- * @param    string    $output
  * @param    string    $temporaryAssFile
+ * @param    string    $output
  * @param    integer   $width - video width
  * @param    integer   $height - video height
- * @param    string    $font - default Arial
- * @param    integer   $fontSize - default 35
- * @param    string    $fontColor - default white &H00FFFFFF
- * @param    integer   $styleBold - ( default disable - 0, enable - 1 )
- * @param    integer   $styleItalic - ( default disable - 0, enable - 1 )
- * @param    integer   $showLines - how many line will be shown in the scrolling window, default - 3 
  * @return string  Command ffmpeg
  */
 
     public function scrollingText(
         $bgImage,
-        $textBoxWidth,
-        $textBoxHeight,
-        $x,
-        $y,
-        $text,
-        $duration,
-        $scrollingDelay,
         $audioFile,
+        $temporaryAssFile,
         $output,
-        $temporaryAssFile,        
+        $duration,
         $width = 1280,
-        $height = 720,
-        $font = "Arial",
-        $fontSize = 35,
-        $fontColor = "&H00FFFFFF",
-        $styleBold = 0,
-        $styleItalic = 0,
-        $showLines = 3
+        $height = 720
     ) {
-
-        $this->setLastError('');
-        if (!$this->prepareSubtitles(
-            $textBoxWidth,
-            $textBoxHeight,
-            $x,
-            $y,
-            $text,
-            $duration,
-            $scrollingDelay,
-            $temporaryAssFile,
-            $width,
-            $height,
-            "",
-            "Default",
-            $font,
-            $fontSize,
-            $fontColor,
-            $styleBold,
-            $styleItalic,
-            3
-        )) {
-            return ("");
-        }
 
         $ffmpeg = $this->getFfmpegSettings('general', 'ffmpeg');
         $ffmpegLogLevel = $this->getFfmpegSettings('general', 'ffmpegLogLevel');
@@ -502,7 +453,6 @@ class FfmpegEffects
         if ($this->getFfmpegSettings('general', 'showCommand')) {
             echo "$cmd\n";
         }
-
         return $cmd;
     }
 
@@ -550,13 +500,15 @@ class FfmpegEffects
         $fontColor = "&H00FFFFFF",
         $styleBold = 0,
         $styleItalic = 0,
-        $showLines = 3
+        $showLines = 3,
+        $outLine = 0
     ) {
         $this->setLastError('');
         $dialogEnd = $this->float2time($duration);
-        $lines = substr_count($text, "\n");
         $text = preg_replace('/\s*$/', '', $text); // remove \n and spaces in the end of text
+        $lines = substr_count($text, "\n");
         $fixedText = preg_replace('/\s*\n\s*/', '\N', $text);
+
 
         $clipX0 = $x;
         $clipX1 = $x + $textBoxWidth;
@@ -571,7 +523,7 @@ class FfmpegEffects
         $moveY1 = $y - (1 + $lines - $showLines) * $oneLineHeight;
         $styleBold = $styleBold ? -1 : 0;
         $styleItalic = $styleItalic ? -1 : 0;
-        $styles = "Style: $useStyle,$font,$fontSize,$fontColor,&H000000FF,&H00050506,&H00919198,$styleBold,$styleItalic,0,0,100,100,0,0,1,1,0.1,7,$styleMarginL,$styleMarginR,10,1";
+        $styles = "Style: Default,$font,$fontSize,$fontColor,&H000000FF,&H00050506,&H00919198,$styleBold,$styleItalic,0,0,100,100,0,0,1,$outLine,0,7,$styleMarginL,$styleMarginR,10,1";
 
         $content = "[Script Info]
 ; Aegisub 3.2.2
@@ -592,7 +544,7 @@ $additionalStyles
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,$dialogEnd,Default,,0,0,0,,{\clip($clipX0,$clipY0,$clipX1,$clipY1)} {\move($clipX0,$clipY0,$clipX0,$moveY1,$moveT0,$moveT1)}$fixedText
+Dialogue: 0,0:00:00.00,$dialogEnd,$useStyle,,0,0,0,,{\clip($clipX0,$clipY0,$clipX1,$clipY1)} {\move($clipX0,$clipY0,$clipX0,$moveY1,$moveT0,$moveT1)}$fixedText
 ";
 
         if (!file_put_contents($temporaryAssFile, $content)) {

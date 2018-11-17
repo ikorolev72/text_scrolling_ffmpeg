@@ -3,6 +3,13 @@
 # This script demo for scrolling text video
 # korolev-ia@yandex.ru
 #
+/* 
+This demo show how to use prdefined styles 
+You can use editor Aegisub (  http://www.aegisub.org/ )
+for definition of styles
+*/ 
+
+
 
 require_once "./FfmpegEffects.php";
 ##########################
@@ -15,60 +22,29 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 # new instance for FfmpegEffects
 $effect = new FfmpegEffects();
 
-$effect->setGeneralSettings(
-    array(
-        //'ffmpeg' => '/usr/bin/ffmpeg',
-        'ffmpegLogLevel' => 'info',
-        'showCommand' => false,
-    )
-);
-echo "General settings:";
-echo var_dump($effect->getGeneralSettings());
-
-# set ffmpeg new audio output settings
-$effect->setAudioOutputSettings(
-    array(
-        'codec' => 'aac',
-        'bitrate' => '128k',
-    )
-);
-
-echo "New settings for output audio ffmpeg:";
-echo var_dump($effect->getAudioOutputSettings());
-
-$effect->setVideoOutputSettings(
-    array(
-        'format' => 'mp4',
-        'crf' => 20,
-        'framerate' => 30,
-        'preset' => 'veryfast',
-    )
-);
-
 echo "Settings for output video ffmpeg:";
 echo var_dump($effect->getVideoOutputSettings());
 
-#$tempDir = sys_get_temp_dir();
-#$tempDir = "/tmp";
 $tempDir = ".";
 
 // please remove next temporary file after ffmpeg processing ( eg @unlink( $temporaryAssFile  );
 $temporaryAssFile = "$tempDir/" . time() . rand(10000, 99999) . ".ass";
 
 $bgImage = "bg.jpg";
-$textBoxWidth = 1000;
 
 // WARNING
 // Please be carefull with $fontSize, $textBoxHeight and $showLines
 // those variables are relative and define speed of scrolling.
-// Unfortunately, several fonts may have another height in Linux , but in most cases you can set simple  $textBoxHeight=$showLines*$fontSize;
+// Unfortunately, several fonts may have another height in Linux , but in most cases you can set simple $textBoxHeight=$showLines*$fontSize;
 //
 // for example $fontSize=35, we need 3 ( $showLines=3 )lines to will be shown, then
 // set $textBoxHeight to 3*35=105
 //
-$showLines = 3; // how many line will be shown in the scrolling window
+
+
+$showLines = 6; // how many line will be shown in the scrolling window
+$textBoxHeight = 150; // usual it will be equivalent of lines * fontSize, for example lines=3, fontSize=35, textBoxHeight=3*35=105
 $textBoxWidth = 700;
-$textBoxHeight = 120; // usual it will be equivalent of lines * fontSize, for example lines=3, fontSize=35, textBoxHeight=3*35=105
 $x = 555;
 $y = 470;
 
@@ -89,16 +65,21 @@ $audioFile = "15sec.mp3";
 $output = "output.mp4";
 $width = 1280;
 $height = 720;
-$font = "Open Sans";
-$fontSize = 40;
-$fontColor = "&HD1CEE7"; // please use KML format. For converting from rgb to KML you can use http://www.netdelight.be/kml/index.php
-$styleBold = 1;
-$styleItalic = 0;
-$outLine = 0;
 
-$additionalStyles ="";
-$useStyle = "Default";
 
+// Style 'Default' will be set with parameters in function prepareSubtitles
+// $additionalStyles predefined styles you can use each of them  with variable $useStyle
+// $useStyle="Verdana_bold_35";
+// if you use predefined styles, next parameters do not used $font, $fontColor, $fontSize, $styleBold, $styleItalic, $outLine
+$additionalStyles =
+    "Style: Arial_bold_35,Arial,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+Style: OpenSans_25,Open Sans,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+Style: OpenSans_bold_25,Open Sans,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+Style: Verdana_35 ,Verdana,35,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+Style: Arial_35,Arial,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+Style: Verdana_bold_35,Verdana,35,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
+";
+$useStyle = "OpenSans_bold_25";
 
 // prepare SSA/ASS file
 if (!$effect->prepareSubtitles(
