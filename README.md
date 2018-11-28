@@ -16,10 +16,13 @@ The parameters:
 
 ##  The Latest Version
 
-	version 1.3 2018.11.17
+	version 1.4 2018.11.28
 
 
 ##  Whats new
+	version 1.4 2018.11.28
+  + Added delay in the endo of scrolling effect
+
 	version 1.3 2018.11.17
   + Added parameter outLine in function prepareSubtitles
   + Fixed bug with used font
