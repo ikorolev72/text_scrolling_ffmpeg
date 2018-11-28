@@ -518,7 +518,7 @@ class FfmpegEffects
         $styleMarginR = $width - $textBoxWidth - $x;
 
         $moveT0 = $scrollingDelay * 1000;
-        $moveT1 = $duration * 1000;
+        $moveT1 = ( $duration-$scrollingDelay) * 1000;
         $oneLineHeight = $textBoxHeight / $showLines;
         $moveY1 = $y - (1 + $lines - $showLines) * $oneLineHeight;
         $styleBold = $styleBold ? -1 : 0;
