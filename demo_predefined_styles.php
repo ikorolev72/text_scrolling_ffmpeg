@@ -80,6 +80,8 @@ Style: Arial_35,Arial,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100
 Style: Verdana_bold_35,Verdana,35,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,10,10,10,1
 ";
 $useStyle = "OpenSans_bold_25";
+$scrollingPostDelay = 2;
+
 
 // prepare SSA/ASS file
 if (!$effect->prepareSubtitles(
@@ -101,7 +103,8 @@ if (!$effect->prepareSubtitles(
     $styleBold,
     $styleItalic,
     $showLines,
-    $outLine)
+    $outLine,
+    $scrollingPostDelay)
 ) {
     echo $effect->getLastError();
     @unlink($temporaryAssFile);

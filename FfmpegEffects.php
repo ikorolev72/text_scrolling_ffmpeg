@@ -6,7 +6,7 @@
  * and have several function for effects, like
  * transitions, mix audio, etc
  * @author korolev-ia [at] yandex.ru
- * @version 3.0.7
+ * @version 3.0.9
  */
 
 class FfmpegEffects
@@ -466,7 +466,7 @@ class FfmpegEffects
  * @param    integer   $y
  * @param    string    $text
  * @param    integer   $duration
- * @param    integer   $scrollingDelay
+ * @param    integer   $scrollingDelay - delay before scrolling
  * @param    integer   $width - video width
  * @param    integer   $height - video height
  * @param    string    $temporaryAssFile
@@ -479,6 +479,8 @@ class FfmpegEffects
  * @param    integer   $styleBold ( disable - 0, enable - 1 )
  * @param    integer   $styleItalic ( disable - 0, enable - 1 )
  * @param    integer   $showLines - how many line will be shown in the scrolling window
+ * @param    float     $outLine - outline around fonts, ususal value - 0.1-1, 0 for disable
+ * @param    integer   $scrollingPostDelay - delay ather scroling is done
  *
  * @return   boolean
  */
@@ -501,14 +503,14 @@ class FfmpegEffects
         $styleBold = 0,
         $styleItalic = 0,
         $showLines = 3,
-        $outLine = 0
+        $outLine = 0,
+        $scrollingPostDelay = 0
     ) {
         $this->setLastError('');
         $dialogEnd = $this->float2time($duration);
         $text = preg_replace('/\s*$/', '', $text); // remove \n and spaces in the end of text
         $lines = substr_count($text, "\n");
         $fixedText = preg_replace('/\s*\n\s*/', '\N', $text);
-
 
         $clipX0 = $x;
         $clipX1 = $x + $textBoxWidth;
@@ -518,7 +520,7 @@ class FfmpegEffects
         $styleMarginR = $width - $textBoxWidth - $x;
 
         $moveT0 = $scrollingDelay * 1000;
-        $moveT1 = ( $duration-$scrollingDelay) * 1000;
+        $moveT1 = ($duration - $scrollingPostDelay) * 1000;
         $oneLineHeight = $textBoxHeight / $showLines;
         $moveY1 = $y - (1 + $lines - $showLines) * $oneLineHeight;
         $styleBold = $styleBold ? -1 : 0;

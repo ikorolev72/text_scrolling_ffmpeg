@@ -69,7 +69,7 @@ $textBoxWidth = 1000;
 $showLines = 3; // how many line will be shown in the scrolling window
 $textBoxWidth = 700;
 $textBoxHeight = 120; // usual it will be equivalent of lines * fontSize, for example lines=3, fontSize=35, textBoxHeight=3*35=105
-$x = 555;
+$x = 50;
 $y = 470;
 
 $text = "I saw your ffmpeg / php work on github and you're probably perfect for a project. I'm looking for someone to make a php class with a function to create a video with an animated text box (scroll down to up).
@@ -83,7 +83,7 @@ The parameters for input should be:
     - file name for the new video";
 
 $text = wordwrap($text, 60); // please wrap very long lines in your text
-$duration = 20;
+$duration = 25;
 $scrollingDelay = 5;
 $audioFile = "15sec.mp3";
 $output = "output.mp4";
@@ -91,14 +91,14 @@ $width = 1280;
 $height = 720;
 $font = "Open Sans";
 $fontSize = 40;
-$fontColor = "&HD1CEE7"; // please use KML format. For converting from rgb to KML you can use http://www.netdelight.be/kml/index.php
+$fontColor = "&H00FFFFFF"; // please use KML format. For converting from rgb to KML you can use http://www.netdelight.be/kml/index.php
 $styleBold = 1;
 $styleItalic = 0;
-$outLine = 0;
+$outLine = 0.4;
+$scrollingPostDelay = 2;
 
-$additionalStyles ="";
+$additionalStyles = "";
 $useStyle = "Default";
-
 
 // prepare SSA/ASS file
 if (!$effect->prepareSubtitles(
@@ -120,7 +120,8 @@ if (!$effect->prepareSubtitles(
     $styleBold,
     $styleItalic,
     $showLines,
-    $outLine)
+    $outLine,
+    $scrollingPostDelay)
 ) {
     echo $effect->getLastError();
     @unlink($temporaryAssFile);

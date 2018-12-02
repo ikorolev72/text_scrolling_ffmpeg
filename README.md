@@ -16,12 +16,17 @@ The parameters:
 
 ##  The Latest Version
 
-	version 1.4 2018.11.28
+	version 1.5 2018.12.02
 
 
 ##  Whats new
+
+	version 1.5 2018.12.02
+  + Added parameter $scrollingPostDelay for delay in the end of scrolling effect
+
 	version 1.4 2018.11.28
-  + Added delay in the endo of scrolling effect
+  + Added delay in the end of scrolling effect
+
 
 	version 1.3 2018.11.17
   + Added parameter outLine in function prepareSubtitles
@@ -78,7 +83,8 @@ $effect->prepareSubtitles(
     $styleBold,
     $styleItalic,
     $showLines,
-    $outLine);
+    $outLine,
+    $scrollingPostDelay  );
 
 $cmd = $effect->scrollingText(
     $bgImage,
